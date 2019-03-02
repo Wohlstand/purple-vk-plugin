@@ -134,7 +134,7 @@ void on_error(const AuthData_ptr& data, PurpleConnectionError error, const strin
         data->error_cb();
 }
 
-const char api_version[] = "5.14";
+const char api_version[] = "5.92";
 const char mobile_user_agent[] = "Mozilla/5.0 (Mobile; rv:17.0) Gecko/17.0 Firefox/17.0";
 const char desktop_user_agent[] = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Firefox/25.0";
 
@@ -144,15 +144,23 @@ void start_auth(const AuthData_ptr& data)
     purple_connection_update_progress(data->gc, i18n("Connecting"), 0, 4);
     vkcom_debug_info("Starting authentication\n");
 
-    string url = str_format("https://oauth.vk.com/oauth/authorize?redirect_uri=https://oauth.vk.com/blank.html"
-                            "&response_type=token&client_id=%s&scope=%s&display=mobile&v=%s",
-                            data->client_id.data(), data->scope.data(), api_version);
+    string url = str_format("https://oauth.vk.com/authorize?"
+                            "redirect_uri=https://oauth.vk.com/blank.html"
+                            "&response_type=token"
+                            "&client_id=%s"
+                            "&scope=%s"
+                            "&display=mobile"
+                            "&v=%s",
+                            data->client_id.data(),
+                            data->scope.data(),
+                            api_version);
     http_get(data->gc, url, [=](PurpleHttpConnection* http_conn, PurpleHttpResponse* response) {
         on_fetch_vk_oauth_form(data, http_conn, response);
     });
 }
 
-void on_fetch_vk_oauth_form(const AuthData_ptr& data, PurpleHttpConnection* http_conn,
+void on_fetch_vk_oauth_form(const AuthData_ptr& data,
+                            PurpleHttpConnection* http_conn,
                             PurpleHttpResponse* response)
 {
     purple_connection_update_progress(data->gc, i18n("Connecting"), 1, 4);
