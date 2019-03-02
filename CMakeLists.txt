@@ -12,8 +12,8 @@ endif()
 # Set global compiler-specific flags
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -fvisibility=hidden")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -fvisibility=hidden")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-shadow -fvisibility=hidden")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-shadow -fvisibility=hidden")
 
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if ("${CMAKE_CXX_COMPILER_VERSION}" VERSION_GREATER 4.7 OR "${CMAKE_CXX_COMPILER_VERSION}" VERSION_EQUAL 4.7)
