@@ -226,9 +226,14 @@ string timestamp_to_long_format(time_t timestamp)
 
 void process_message(const MessagesData_ptr& data, const picojson::value& fields)
 {
-    if (!field_is_present<double>(fields, "user_id") || !field_is_present<double>(fields, "date")
-            || !field_is_present<string>(fields, "body") || !field_is_present<double>(fields, "id")
-            || !field_is_present<double>(fields, "read_state")|| !field_is_present<double>(fields, "out")) {
+    if (!field_is_present<double>(fields, "peer_id") ||
+        !field_is_present<double>(fields, "date") ||
+        !field_is_present<string>(fields, "text") ||
+        !field_is_present<double>(fields, "id") ||
+        // !field_is_present<double>(fields, "read_state") ||
+        !field_is_present<double>(fields, "out")
+    )
+    {
         vkcom_debug_error("Strange response from messages.get or messages.getById: %s\n",
                            fields.serialize().data());
         return;
@@ -239,19 +244,19 @@ void process_message(const MessagesData_ptr& data, const picojson::value& fields
 
     Message message;
     message.mid = fields.get("id").get<double>();
-    message.user_id = fields.get("user_id").get<double>();
+    message.user_id = fields.get("peer_id").get<double>();
     message.chat_id = 0;
     if (field_is_present<double>(fields, "chat_id"))
         message.chat_id = fields.get("chat_id").get<double>();
 
-    message.text = cleanup_message_body(fields.get("body").get<string>());
+    message.text = cleanup_message_body(fields.get("text").get<string>());
     message.timestamp = fields.get("date").get<double>();
     if (fields.get("out").get<double>() != 0.0)
         message.status = MESSAGE_OUTGOING;
-    else if (fields.get("read_state").get<double>() == 0.0)
-        message.status = MESSAGE_INCOMING_UNREAD;
+    //else if (fields.get("read_state").get<double>() == 0.0)
+    //    message.status = MESSAGE_INCOMING_UNREAD;
     else
-        message.status = MESSAGE_INCOMING_READ;
+        message.status = MESSAGE_INCOMING_UNREAD;//MESSAGE_INCOMING_READ;
 
     // Process attachments: append information to text.
     if (field_is_present<picojson::array>(fields, "attachments"))
@@ -320,8 +325,10 @@ void process_attachments(PurpleConnection* gc, const picojson::array& items, Mes
 
 void process_fwd_message(PurpleConnection* gc, const picojson::value& fields, Message& message)
 {
-    if (!field_is_present<double>(fields, "user_id") || !field_is_present<double>(fields, "date")
-            || !field_is_present<string>(fields, "body")) {
+    if (!field_is_present<double>(fields, "peer_id") ||
+        !field_is_present<double>(fields, "date") ||
+        !field_is_present<string>(fields, "text"))
+    {
         vkcom_debug_error("Strange response from messages.get or messages.getById: %s\n",
                            fields.serialize().data());
         return;
@@ -335,7 +342,7 @@ void process_fwd_message(PurpleConnection* gc, const picojson::value& fields, Me
     // with proper name and href in replace_ids().
     string text = str_format(i18n("Forwarded message (from %s on %s):\n"),
                              get_user_placeholder(gc, user_id, message).data(), date.data());
-    text += cleanup_message_body(fields.get("body").get<string>());
+    text += cleanup_message_body(fields.get("text").get<string>());
     // Prepend quotation marks to all forwared message lines.
     str_replace(text, "\n", "\n    > ");
 

@@ -27,6 +27,7 @@ struct SendMessage
 {
     // One and only one of user_id or chat_id should be non-zero.
     uint64 user_id;
+    int64  random_id;
     uint64 chat_id;
     string text;
     string attachments;
@@ -47,7 +48,7 @@ void show_error(PurpleConnection* gc, const SendMessage& message);
 int send_im_message(PurpleConnection* gc, uint64 user_id, const char* raw_message,
                     const SuccessCb& success_cb, const ErrorCb& error_cb)
 {
-    vkcom_debug_info("Sending IM message to %llu\n", (unsigned long long)user_id);
+    vkcom_debug_info("Sending IM message to %ll\n", (long long)user_id);
 
     return send_message(gc, user_id, 0, raw_message, success_cb, error_cb);
 }
@@ -211,6 +212,7 @@ int send_message(PurpleConnection* gc, uint64 user_id, uint64 chat_id, const cha
     SendMessage_ptr message{ new SendMessage() };
     message->user_id = user_id;
     message->chat_id = chat_id;
+    message->random_id = (int64)rand();
     message->text = stripped_message;
     message->success_cb = success_cb;
     message->error_cb = error_cb;
@@ -273,6 +275,7 @@ void send_message_internal(PurpleConnection* gc, const SendMessage_ptr& message,
         params.emplace_back("captcha_sid", captcha_sid);
     if (!captcha_key.empty())
         params.emplace_back("captcha_key", captcha_key);
+    params.emplace_back("random_id", to_string(message->random_id));
 
     get_data(gc).set_last_msg_sent_time(steady_clock::now());
 
@@ -340,7 +343,7 @@ void process_im_error(const picojson::value& error, PurpleConnection* gc, const 
 
 void show_error(PurpleConnection* gc, const SendMessage& message)
 {
-    vkcom_debug_error("Error sending message to %llu/%llu\n", (unsigned long long)message.user_id,
+    vkcom_debug_error("Error sending message to %llu/%ll\n", (long long)message.user_id,
                       (unsigned long long)message.chat_id);
 
     PurpleConversation* conv = find_conv_for_id(gc, message.user_id, message.chat_id);
