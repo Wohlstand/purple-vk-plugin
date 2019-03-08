@@ -7,7 +7,7 @@
 #include "vk-auth.h"
 #include "vk-common.h"
 
-const char VK_CLIENT_ID[] = "2685278";//"3833170"; [УРОДЛИВЫЙ КОСТЫЛЬ]
+const char VK_CLIENT_ID[] = "3833170";
 const char VK_PERMISSIONS[] = "friends,photos,audio,video,docs,status,messages,offline";
 
 namespace {
